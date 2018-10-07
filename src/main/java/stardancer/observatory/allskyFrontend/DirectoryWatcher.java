@@ -26,7 +26,7 @@ public class DirectoryWatcher implements Runnable {
     public DirectoryWatcher(Path path) throws IOException {
         this.path = path;
         this.watchService = FileSystems.getDefault().newWatchService();
-        this.watchKey = path.register(watchService, ENTRY_CREATE);
+        this.watchKey = this.path.register(watchService, ENTRY_CREATE);
     }
 
     @Override
@@ -43,11 +43,12 @@ public class DirectoryWatcher implements Runnable {
 
                  for (WatchEvent<?> event : key.pollEvents()) {
                      WatchEvent<Path> pathEvent = cast(event);
+                     //TODO - HANDLE EVENT - NOTIFY LISTENERS
                  }
 
-
-
-
+                 if (!key.reset()) {
+                     break;
+                 }
              }
         } catch (InterruptedException i) {
             return;
