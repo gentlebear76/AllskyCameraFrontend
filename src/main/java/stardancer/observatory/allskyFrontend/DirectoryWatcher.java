@@ -1,7 +1,10 @@
 package stardancer.observatory.allskyFrontend;
 
+import javafx.event.Event;
 import org.apache.log4j.Logger;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.nio.file.*;
 
@@ -15,6 +18,7 @@ public class DirectoryWatcher implements Runnable {
     private final Path path;
     private final WatchService watchService;
     private final WatchKey watchKey;
+    private ActionListener externalActionListener;
 
 
     @SuppressWarnings("unchecked")
@@ -23,10 +27,11 @@ public class DirectoryWatcher implements Runnable {
     }
 
 
-    public DirectoryWatcher(Path path) throws IOException {
+    public DirectoryWatcher(Path path, ActionListener listener) throws IOException {
         this.path = path;
         this.watchService = FileSystems.getDefault().newWatchService();
         this.watchKey = this.path.register(watchService, ENTRY_CREATE);
+        this.externalActionListener = listener;
     }
 
     @Override
@@ -43,7 +48,7 @@ public class DirectoryWatcher implements Runnable {
 
                  for (WatchEvent<?> event : key.pollEvents()) {
                      WatchEvent<Path> pathEvent = cast(event);
-                     //TODO - HANDLE EVENT - NOTIFY LISTENERS
+                     externalActionListener.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, pathEvent.context().toString()));
                  }
 
                  if (!key.reset()) {

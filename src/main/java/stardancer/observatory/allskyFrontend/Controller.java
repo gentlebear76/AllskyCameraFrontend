@@ -2,10 +2,13 @@ package stardancer.observatory.allskyFrontend;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import org.apache.log4j.Logger;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,42 +21,62 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-public class Controller {
+public class Controller implements ActionListener {
 
     private static final Logger LOGGER = Logger.getLogger(Controller.class);
 
     private final String imagePath = "D:\\Downloads\\";
 
-    View view = new View();
+    private Model model;
 
-    DirectoryWatcher directoryWatcher;
-    ExecutorService executorService;
-    Future<?> future;
+    private DirectoryWatcher directoryWatcher;
+    private ExecutorService executorService;
+    private Future<?> future;
 
+    private boolean exposureRunning = false;
+
+    private double exposureTime;
+    private int cameraGain;
 
 
     @FXML
-    Label cameraImage;// = new Label("cameraImage");
+    ImageView imageView;
 
+    @FXML
+    TextField inputGain;
+
+    @FXML
+    TextField inputExposureTime;
+
+    @FXML
     public void displayImage(Image image) {
+        imageView.setImage(image);
+    }
 
-        cameraImage.setText("Hulahop");
-        cameraImage.setGraphic(new ImageView(image));
-
-
+    @FXML
+    public void updateExposure() {
 
     }
 
-
-
-    public void loadImage() {
+    @FXML
+    public void updateGain() {
 
     }
+
+    @FXML
+    public void toggleExposure() {
+        if (exposureRunning) {
+            model.stopRemoteImaging();
+        } else {
+            model.startRemoteImaging();
+        }
+    }
+
 
     private void initiateDirectoryWatcher() {
         try {
             Path directory = Paths.get(imagePath);
-            directoryWatcher = new DirectoryWatcher(directory);
+            directoryWatcher = new DirectoryWatcher(directory, this);
             executorService = Executors.newSingleThreadExecutor();
             future = executorService.submit(directoryWatcher);
             executorService.shutdown();
@@ -74,24 +97,29 @@ public class Controller {
     }
 
 
+    /**
+     * This class listenes for new directory updates and triggers this method when one shows up.
+     * @param a
+     */
+    public void actionPerformed(ActionEvent a) {
+        updateImage(a.getActionCommand());
+    }
 
+    private void updateImage(String fileName) {
+        InputStream image = null;
+        try {
+            image = new FileInputStream(new File(imagePath + "\\" + fileName));
+            displayImage(new Image(image));
+        } catch (IOException i) {
 
-
+        }
+    }
 
     @FXML
     private void initialize() {
         initiateDirectoryWatcher();
+        model = new Model();
 
-        InputStream image = null;
-        try {
-            image = new FileInputStream(new File("D:\\Downloads\\test.jpg"));
-        } catch (IOException i) {
-
-        }
-        Image testImage = null;
-        if (image != null) {
-            view.displayImage(new Image(image));
-        }
 
     }
 
