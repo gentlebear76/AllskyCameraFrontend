@@ -68,7 +68,7 @@ public class Controller implements ActionListener {
         if (exposureRunning) {
             model.stopRemoteImaging();
         } else {
-            model.startRemoteImaging();
+//            model.startRemoteImaging();
         }
     }
 

@@ -22,6 +22,15 @@ public class Main extends Application {
         Logging.setupLogConsoleLogger();
         CommandLine cmd = CommandLineController.parseCommandLine(args);
         Logging.setupFileLogger(cmd);
-        launch(args);
+        Settings settings = new Settings();
+
+        ServerCommunicator serverCommunicator = new ServerCommunicator(settings);
+        serverCommunicator.communicate();
+
+
+
+
+
+//        launch(args);
     }
 }
